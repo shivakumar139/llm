@@ -151,7 +151,7 @@ export const gemini = async (input: string, sessionId: string) => {
             },
           }
           );
-        return res;
+        return res.content;
     } catch (error) {
         console.error("Error invoking model:", error);
         throw error;

@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import {gemini} from "./llm/gemini"
 import { v4 as uuidv4 } from "uuid";
+import cors from "cors";
 
 
 const app: Express = express();
@@ -9,11 +10,14 @@ const port = process.env.PORT || 3000;
 app.use(express.urlencoded({extended: false}))
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors());
 
 app.post("/", async (req: Request, res: Response) => {
   try {
+    
     const input: string = req.body.input;
     let sessionId: string = req.cookies.sessionId;
+    console.log("input:", input);
 
     // Generate a new session ID if not present
     if (!sessionId) {
