@@ -4,11 +4,17 @@ import {
     MessagesPlaceholder,
   } from "@langchain/core/prompts";
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
+import { InMemoryChatMessageHistory } from "@langchain/core/chat_history";
+import { RunnableWithMessageHistory } from "@langchain/core/runnables";
 
 import {GEMINI_API_KEY} from '../config';
 
+const messageHistories: Record<string, InMemoryChatMessageHistory> = {};
 
-export const gemini = async () => {
+export const gemini = async (input: string, sessionId: string) => {
+
+    
+
     const model = new ChatGoogleGenerativeAI({
         apiKey: GEMINI_API_KEY,
         temperature: 0.7,
@@ -33,7 +39,7 @@ export const gemini = async () => {
 
             Below are a number of examples of questions and their corresponding Dockerfiles.
 
-            User input: Create a Dockerfile for a Python Flask application using Python 3.8, expose port 5000, install dependencies from requirements.txt, and run the application using "python app.py".
+            input: Create a Dockerfile for a Python Flask application using Python 3.8, expose port 5000, install dependencies from requirements.txt, and run the application using "python app.py".
             Dockerfile:”
             # Use the official Python 3.8 image as the base image
             FROM python:3.8
@@ -57,7 +63,7 @@ export const gemini = async () => {
             CMD ["python", "app.py"]
             “
 
-            User input: Create a Dockerfile for a Node.js application using Node.js 14, expose port 3000, install dependencies from package.json, and run the application using "npm start".
+            input: Create a Dockerfile for a Node.js application using Node.js 14, expose port 3000, install dependencies from package.json, and run the application using "npm start".
             Dockerfile:”
             # Use the official Node.js 14 image as the base image
             FROM node:14
@@ -82,7 +88,7 @@ export const gemini = async () => {
 
             ”
 
-            User input:  Create a Dockerfile for a Java application using OpenJDK 11, expose port 8080, compile the application using Maven, and run the application using "java -jar target/app.jar".
+          input:  Create a Dockerfile for a Java application using OpenJDK 11, expose port 8080, compile the application using Maven, and run the application using "java -jar target/app.jar".
             Dockerfile: ”
             # Use the official OpenJDK 11 image as the base image
             FROM openjdk:11
@@ -105,30 +111,46 @@ export const gemini = async () => {
 
             ”
 
-            User input: Create a Dockerfile for an nginx server that listens on port 80.
+            input: Create a Dockerfile for an nginx server that listens on port 80.
             Dockerfile: ”
             # Use the official nginx image as the base image
             FROM nginx:latest
 
             # Expose port 80
-            EXPOSE 80
-
-`,
+            EXPOSE 80`
         ],
-        new MessagesPlaceholder("messages"),
+        ["placeholder", "{chat_history}"],
+        ["human", "{input}"],
     ]);
       
     const chain = prompt.pipe(model);
 
+    const withMessageHistory = new RunnableWithMessageHistory({
+      runnable: chain,
+      getMessageHistory: async (sessionId) => {
+        if (messageHistories[sessionId] === undefined) {
+          messageHistories[sessionId] = new InMemoryChatMessageHistory();
+        }
+        return messageHistories[sessionId];
+      },
+      inputMessagesKey: "input",
+      historyMessagesKey: "chat_history",
+    });
+
+
     try {
-        const res = await chain.invoke({
-            messages: [
-              new HumanMessage(
-                "Create a Dockerfile for an nginx server that listens on port 80."
-              ),
-            ],
-          });
-        console.log(res.content);
+    
+        const res = await withMessageHistory.invoke(
+          
+          {
+            input,
+          },
+          {
+            configurable: {
+              sessionId,
+            },
+          }
+          );
         return res;
     } catch (error) {
         console.error("Error invoking model:", error);
