@@ -17,9 +17,9 @@ export const gemini = async (input: string, sessionId: string) => {
 
     const model = new ChatGoogleGenerativeAI({
         apiKey: GEMINI_API_KEY,
-        temperature: 0.1,
+        temperature: 0.4,
         modelName: "gemini-pro",
-        topK: 10,
+        topK: 40,
         topP: 0.9,
     });
 
