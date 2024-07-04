@@ -18,12 +18,13 @@
     "typescript": "^5.5.2"
   },
   "dependencies": {
+    "@langchain/core": "^0.2.13",
     "@langchain/google-genai": "^0.0.21",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "openai": "^4.52.2",
+    "langchain": "^0.2.8",
     "uuid": "^10.0.0"
   }
 }

@@ -5,7 +5,10 @@ import {
   } from "@langchain/core/prompts";
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
 import { InMemoryChatMessageHistory } from "@langchain/core/chat_history";
-import { RunnableWithMessageHistory } from "@langchain/core/runnables";
+import { RunnableSequence, RunnableWithMessageHistory } from "@langchain/core/runnables";
+import { Document } from "langchain/document";
+
+import { terrafomContent } from "../constants/promptFactory";
 
 import {GEMINI_API_KEY} from '../config';
 
@@ -36,16 +39,27 @@ export const gemini = async (input: string, sessionId: string) => {
 
           "run_command": "docker run -d -p port:80 myapp"
 
+          You are a DevOps engineer working with the backend team. Your task is to assist the team members by helping them create or update Terraform (main.tf) files based on their specific requirements. Provide the response in the following JSON format:
+        {{
+          "updated_main_tf": "provider \\"aws\\" {{\\n  region = \\"us-west-2\\"\\n}}\\nresource \\"aws_instance\\" \\"example\\" {{\\n  ami           = \\"ami-0c55b159cbfafe1f0\\"\\n  instance_type = \\"t2.micro\\"\\n}}",
+          "instructions": "Update the region and instance_type based on your requirements."
+        }}
+        
+        Include the full content of the updated main.tf file in the "updated_main_tf" field and any special instructions in the "instructions" field.
+        
           `
       ],
       ["placeholder", "{chat_history}"],
       ["human", "{input}"],
   ]);
       
-    const chain = prompt.pipe(model);
+
+    const runnableSequence = RunnableSequence.from([prompt, model]);
+    const chain = prompt.invoke(model);
+
 
     const withMessageHistory = new RunnableWithMessageHistory({
-      runnable: chain,
+      runnable: runnableSequence,
       getMessageHistory: async (sessionId) => {
         if (messageHistories[sessionId] === undefined) {
           messageHistories[sessionId] = new InMemoryChatMessageHistory();
@@ -54,6 +68,7 @@ export const gemini = async (input: string, sessionId: string) => {
       },
       inputMessagesKey: "input",
       historyMessagesKey: "chat_history",
+      
     });
 
 
