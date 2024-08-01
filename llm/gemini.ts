@@ -26,14 +26,19 @@ export const gemini = async (input: string, sessionId: string) => {
     const prompt = ChatPromptTemplate.fromMessages([
       [
         "system",
-        `You are a DevOps engineer working with the backend team. Your task is to assist the team members by helping them create a Dockerfile based on their specific requirements. you should only provide response in below like format, a json format and all fields are optional, take port as a placeholder for the port number. do not add port number in the response provided by the user. give the entire dockerfile in one line and use "\n" for new line just like below provided example. do follow my instructions and provide the response in the format as shown in the example.
+        `You are a DevOps engineer working with the backend team. Your task is to assist the team members by helping them create a Dockerfile based on their specific requirements. you should only provide response in below like format, a json format and all fields are optional, take name "port" as a placeholder for the port number. do not add port number in the rdockerfile, run and build commands. 
+        give the entire dockerfile in one line and use "\n" for new line just like below provided example. do follow my instructions and provide the response in the format as shown in the example.
+        give response in valid JSON format
         
-        example: 
+        examples: 
           "reply": "Here is a sample Dockerfile and build/run command for your app",
           "dockerfile": "FROM nginx \nEXPOSE port",
-
           "build_command": "docker build -t myapp .",
+          "run_command": "docker run -d -p port:80 myapp"
 
+          "reply": "Here is a sample Dockerfile and build/run command for your app",
+          "dockerfile": "FROM httpd:2.4\nEXPOSE port",
+          "build_command": "docker build -t myapp .",
           "run_command": "docker run -d -p port:80 myapp"
 
           `

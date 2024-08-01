@@ -6,11 +6,12 @@ import cors from "cors";
 
 
 const app: Express = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 app.use(express.urlencoded({extended: false}))
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors());
+app.use(cors({origin: 'http://localhost:3000',
+  credentials: true}));
 
 app.post("/", async (req: Request, res: Response) => {
   try {
@@ -25,7 +26,7 @@ app.post("/", async (req: Request, res: Response) => {
         res.cookie("sessionId", sessionId, { httpOnly: true });
     }
 
-    return res.status(200).send(await gemini(input, sessionId));
+    return res.status(200).json(await gemini(input, sessionId));
 
 } catch (error) {
     console.error("Error processing request:", error);
